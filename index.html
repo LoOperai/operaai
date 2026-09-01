@@ -1,1 +1,30 @@
-index.html
+<!doctype html>
+<html lang="it"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OperaAI — Back-office intelligente</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<aside><div class="logo">◆ Opera<span>AI</span></div>
+<nav><a class="active">⌂ Dashboard</a><a>＋ Nuova richiesta</a><a>▢ Pratiche</a><a>◷ Follow-up <b>3</b></a><a>▤ Documenti</a><a>♧ Clienti</a><a>▥ Statistiche</a><a>⚙ Impostazioni</a></nav>
+<div class="tip"><strong>✦ Risparmia tempo</strong><p>Trasforma ogni richiesta in lavoro organizzato.</p></div></aside>
+<main><header><div class="links"><span>Dashboard</span><span>Pratiche</span><span>Modelli</span><span>Impostazioni</span></div><div class="user"><i>MR</i><strong>Demo Azienda</strong>⌄</div></header>
+<section><div class="hero"><div><h1>Benvenuto! 👋</h1><p>Trasforma le richieste in pratiche pronte da gestire.</p></div><small>DEMO</small></div>
+<div class="stats"><article>✉<div>Richieste totali<strong id="total">12</strong><em>+3 oggi</em></div></article><article>!<div>Da gestire<strong id="todo">4</strong><em>Priorità alta</em></div></article><article>✓<div>In lavorazione<strong>5</strong><em>In corso</em></div></article><article>↻<div>Follow-up<strong>3</strong><em>Da inviare</em></div></article><article>▤<div>Documenti<strong>8</strong><em>Ultimi 7 giorni</em></div></article></div>
+<div class="workspace"><article class="card"><h2>1. Inserisci la richiesta</h2><p>Incolla qui l'email, il messaggio o la richiesta ricevuta dal cliente.</p>
+<textarea id="request">Buongiorno,
+avrei bisogno di un intervento per il climatizzatore dell'ufficio in Via Roma 25.
+
+Al momento non raffredda più e fa un rumore strano.
+Possibilmente questa settimana.
+
+Fatemi sapere disponibilità e costo.
+
+Grazie
+Rossi Srl</textarea><div class="hint">✦ Più dettagli fornisci, più precisa sarà l'analisi.</div>
+<button id="analyze">✦ Analizza richiesta</button><div class="or">OPPURE</div><button class="upload">↥ Carica un file o uno screenshot</button></article>
+<article class="card"><div class="resulthead"><h2>✦ Analisi AI</h2><span id="status">● Analisi completata</span></div>
+<div class="fields"><div>TIPO DI RICHIESTA<strong>Richiesta intervento tecnico</strong></div><div>CLIENTE<strong>Rossi Srl</strong></div><div>PRIORITÀ<strong class="high">● Alta</strong></div><div>INDIRIZZO<strong>Via Roma 25</strong></div><div>PROBLEMA<strong>Climatizzatore non raffredda, rumore strano</strong></div><div>URGENZA<strong>Questa settimana</strong></div></div>
+<div class="missing"><b>INFORMAZIONI MANCANTI</b><ul><li>Modello del climatizzatore</li><li>Giorno e fascia oraria preferita</li><li>Piano / interno o esterno</li></ul></div>
+<div class="reply"><div><b>✉ RISPOSTA SUGGERITA</b><button id="copy">Copia</button></div><p id="reply">Buongiorno Rossi,<br><br>grazie per averci contattato. Per organizzare l'intervento ci servirebbero il modello del climatizzatore, il piano e una vostra disponibilità indicativa per giorno e fascia oraria.<br><br>Appena riceviamo queste informazioni le confermiamo data, tecnico e costo dell'intervento.<br><br>Restiamo a disposizione, cordiali saluti.</p></div>
+<div class="actions"><button class="secondary">✎ Modifica</button><button class="secondary">▱ Salva bozza</button><button id="create" class="success">✓ Approva e crea pratica</button></div></article></div>
+<div class="bottom"><article class="card"><div class="section"><h2>Ultime richieste</h2>Vedi tutte →</div><table id="table"><tr><th>Cliente</th><th>Tipo</th><th>Priorità</th><th>Stato</th><th>Data</th></tr><tr><td>Rossi Srl</td><td>Intervento tecnico</td><td>Alta</td><td>Da gestire</td><td>Oggi</td></tr><tr><td>Bianchi Spa</td><td>Preventivo</td><td>Media</td><td>In lavorazione</td><td>Ieri</td></tr></table></article>
+<article class="card"><div class="section"><h2>Attività recenti</h2>Vedi tutte →</div><p>● Nuova richiesta analizzata <span>2 min fa</span></p><p>● Bozza salvata <span>18 min fa</span></p><p>● Follow-up programmato <span>1 ora fa</span></p></article></div>
+</section></main><div id="toast"></div><script src="app.js"></script></body></html>
