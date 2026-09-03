@@ -1,0 +1,297 @@
+const state = {
+  requests: [],
+  practices: [],
+  minutes: 0
+};
+
+function $(id) {
+  return document.getElementById(id);
+}
+
+function esc(value) {
+  return String(value ?? "").replace(/[&<>"']/g, function (m) {
+    return {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#039;"
+    }[m];
+  });
+}
+
+function localAnalysis(text) {
+  const missing = [];
+
+  if (!/email|mail|telefono|tel|recapito/i.test(text)) {
+    missing.push("recapito del cliente");
+  }
+
+  if (!/servizio|prodotto|preventivo|prezzo|costo|lavoro|intervento/i.test(text)) {
+    missing.push("servizio o prodotto richiesto");
+  }
+
+  return {
+    category: /preventivo|prezzo|costo/i.test(text)
+      ? "Richiesta commerciale"
+      : "Richiesta cliente",
+
+    priority: text.length > 300 ? "Media" : "Normale",
+
+    summary:
+      text.length > 180
+        ? text.substring(0, 177) + "..."
+        : text,
+
+    missing: missing,
+
+    suggested_reply:
+      "Buongiorno, grazie per averci contattato.\n\n" +
+      "Saremo felici di aiutarla. Per procedere, può indicarci " +
+      "il servizio di interesse e, se possibile, un recapito " +
+      "a cui ricontattarla?\n\nGrazie."
+  };
+}
+
+async function analyzeRequest() {
+  const input = $("requestInput");
+  const button = $("analyzeButton");
+  const result = $("analysisResult");
+
+  if (!input || !button || !result) {
+    alert("Errore nel caricamento di OperaAI. Ricarica la pagina.");
+    return;
+  }
+
+  const text = input.value.trim();
+
+  if (!text) {
+    alert("Inserisci prima una richiesta.");
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "Analisi in corso...";
+
+  result.innerHTML =
+    '<div class="empty">OperaAI sta analizzando la richiesta...</div>';
+
+  try {
+    const response = await fetch("/api/analyze", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        request: text
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error("API error");
+    }
+
+    const data = await response.json();
+
+    showAnalysis(data, text);
+
+  } catch (error) {
+
+    // Se l'API non risponde, OperaAI continua comunque
+    // usando l'analisi locale demo.
+    showAnalysis(localAnalysis(text), text);
+
+  } finally {
+
+    button.disabled = false;
+    button.textContent = "Analizza richiesta";
+  }
+}
+
+function showAnalysis(data, text) {
+
+  state.requests.unshift({
+    text: text,
+    data: data
+  });
+
+  state.minutes += 5;
+
+  $("analysisResult").innerHTML = `
+    <div class="analysis-block">
+      <strong>Categoria</strong>
+      <span class="tag">${esc(data.category || "Da classificare")}</span>
+    </div>
+
+    <div class="analysis-block">
+      <strong>Priorità</strong>
+      <span class="tag">${esc(data.priority || "Normale")}</span>
+    </div>
+
+    <div class="analysis-block">
+      <strong>Riassunto</strong>
+      <div>${esc(data.summary || text)}</div>
+    </div>
+
+    <div class="analysis-block">
+      <strong>Dati mancanti</strong>
+      <div>
+        ${
+          Array.isArray(data.missing) && data.missing.length
+            ? data.missing
+                .map(item => `<span class="tag">${esc(item)}</span>`)
+                .join("")
+            : "Nessun dato evidente"
+        }
+      </div>
+    </div>
+
+    <div class="analysis-block">
+      <strong>Risposta suggerita</strong>
+      <div class="suggested">
+        ${esc(data.suggested_reply || "Nessuna risposta disponibile")}
+      </div>
+    </div>
+
+    <button id="createPractice" class="primary full">
+      Crea pratica
+    </button>
+  `;
+
+  const createButton = $("createPractice");
+
+  if (createButton) {
+    createButton.addEventListener("click", function () {
+
+      state.practices.unshift({
+        title: data.summary || text,
+        priority: data.priority || "Normale"
+      });
+
+      state.minutes += 3;
+
+      render();
+
+      alert("Pratica creata.");
+    });
+  }
+
+  render();
+}
+
+function render() {
+
+  if ($("statRequests")) {
+    $("statRequests").textContent = state.requests.length;
+  }
+
+  if ($("statPractices")) {
+    $("statPractices").textContent = state.practices.length;
+  }
+
+  if ($("statTime")) {
+    $("statTime").textContent = state.minutes + " min";
+  }
+
+  if ($("requestCount")) {
+    $("requestCount").textContent = state.requests.length;
+  }
+
+  if ($("practiceCount")) {
+    $("practiceCount").textContent = state.practices.length;
+  }
+
+  if ($("requestsList")) {
+    $("requestsList").innerHTML =
+      state.requests.length
+        ? state.requests
+            .map((request, index) => `
+              <div class="list-item">
+                <strong>Richiesta #${state.requests.length - index}</strong>
+                <div>${esc(request.text.substring(0, 180))}</div>
+                <small>
+                  ${esc(request.data.category || "Richiesta")}
+                  ·
+                  ${esc(request.data.priority || "Normale")}
+                </small>
+              </div>
+            `)
+            .join("")
+        : "Nessuna richiesta ancora.";
+  }
+
+  if ($("practicesList")) {
+    $("practicesList").innerHTML =
+      state.practices.length
+        ? state.practices
+            .map((practice, index) => `
+              <div class="list-item">
+                <strong>Pratica #${state.practices.length - index}</strong>
+                <div>${esc(practice.title)}</div>
+                <small>
+                  Priorità: ${esc(practice.priority)}
+                </small>
+              </div>
+            `)
+            .join("")
+        : "Nessuna pratica ancora.";
+  }
+}
+
+function setupOperaAI() {
+
+  const analyzeButton = $("analyzeButton");
+  const demoButton = $("demoButton");
+
+  if (analyzeButton) {
+    analyzeButton.addEventListener("click", analyzeRequest);
+  }
+
+  if (demoButton) {
+    demoButton.addEventListener("click", function () {
+
+      if ($("requestInput")) {
+        $("requestInput").value =
+          "Buongiorno, vorrei sapere il prezzo del vostro servizio e quali documenti devo inviarvi per iniziare. Grazie.";
+
+        $("requestInput").focus();
+      }
+    });
+  }
+
+  document.querySelectorAll(".nav-item").forEach(function (button) {
+
+    button.addEventListener("click", function () {
+
+      document
+        .querySelectorAll(".nav-item")
+        .forEach(item => item.classList.remove("active"));
+
+      document
+        .querySelectorAll(".section")
+        .forEach(section => section.classList.remove("active-section"));
+
+      button.classList.add("active");
+
+      const section = $(button.dataset.section);
+
+      if (section) {
+        section.classList.add("active-section");
+      }
+
+      if ($("pageTitle")) {
+        $("pageTitle").textContent = button.textContent;
+      }
+
+      render();
+    });
+  });
+
+  render();
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", setupOperaAI);
+} else {
+  setupOperaAI();
+}
